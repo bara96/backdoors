@@ -8,7 +8,10 @@ def shell():
     while True:
         cmd = input("* Shell#~%s: " % str(ip))
         if cmd == "exit":
-            break
+            reliable_send("exit")
+            print(reliable_recv())
+            s.close()
+            return
         elif cmd.startswith("help"):
             print('Available functions:'
                   '\n- cd {path} => change host directory'
@@ -86,4 +89,3 @@ def upload(cmd):
 if __name__ == '__main__':
     server()
     shell()
-    s.close()
