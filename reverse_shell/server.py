@@ -10,8 +10,11 @@ def shell():
         if cmd == "exit":
             break
         elif cmd[:4] == "help":
-            print("Available functions: \ncd {path} - change host directory \ndownload {file} - Download a file from "
-                  "host \nupload {file} - Upload a file to the host")
+            print('Available functions:'
+                  '\n- cd {path} => change host directory'
+                  '\n- download {file} => Download a file from host'
+                  '\n- upload {file} => Upload a file to the host'
+                  '\n- persistence => Try acquiring persistence')
         elif cmd[:2] == "cd" and len(cmd) > 1:
             reliable_send(cmd)
         elif cmd[:8] == "download":

