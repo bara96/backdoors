@@ -18,7 +18,8 @@ def shell():
                   '\n- download {file} => Download a file from host'
                   '\n- upload {file} => Upload a file to the host'
                   '\n- persistence => Try acquiring persistence'
-                  '\n- get {url} => Download a remote file')
+                  '\n- get {url} => Download a remote file'
+                  '\n- isadmin => Check user privileges')
         elif cmd.startswith("cd") and len(cmd) > 1:
             reliable_send(cmd)
         elif cmd.startswith("download"):
