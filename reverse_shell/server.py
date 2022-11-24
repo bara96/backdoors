@@ -58,9 +58,10 @@ def reliable_recv():
         try:
             json_data = json_data + target.recv(1024)
             return json.loads(json_data.decode())
-        except ValueError as e:
-            print(e)
+        except ValueError:
             continue
+        except Exception as e:
+            print(e)
 
 
 def download(filename):
