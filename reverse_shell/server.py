@@ -4,6 +4,7 @@ import socket
 import json
 from datetime import datetime
 
+host = ("127.0.0.1", 6666)
 s = None
 target = None
 ip = None
@@ -48,7 +49,7 @@ def server():
     # AF_INET=ipv4
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(("127.0.0.1", 6666))
+    s.bind(host)
     s.listen(5)  # specify the n of connection to accept
     print("Listening to incoming connections...")
     target, ip = s.accept()
